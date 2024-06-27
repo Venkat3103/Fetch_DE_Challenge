@@ -68,3 +68,87 @@ The script is designed to be run as a standalone Python application, which is ex
  * However duplicate entries are allowed in the user_logins table in the Postgres database if the same message is sent again in the queue. This is because of the lack of a unique key constraint in the user_logins table schema. Currently permits inserting the same records over and over again (but this can be fixed).
  * The given table schema does not comply with the type of data arriving in the queue and hence had to be altered. The app_version is modified to varchar from int after looking at sample queue data.
  * All records coming in have to follow the schema definition and contain the required fields to be inserted into user_logins. Otherwise considered as error records and inserted into an error log table.
+
+## Set up
+
+1. Install Python
+```https://www.python.org/downloads/```
+
+2. Install Docker Desktop
+```https://docs.docker.com/get-docker/```
+
+3. Install Postgres
+```https://www.postgresql.org/download/```
+
+## How to run the code?
+
+1. Clone the repository in the terminal
+```bash
+git clone https://github.com/Venkat3103/Fetch_DE_Challenge.git
+```
+
+3. Move into the cloned repository
+```bash
+cd Fetch_DE_Challenge
+```
+
+3. Install requirements - this should install all the required libraries used in the code. 
+```bash
+pip install -r requirements.txt
+```
+
+4. Pull Postgres docker image
+```bash
+docker pull fetchdocker/data-takehome-postgres
+```
+
+5. Pull localstack docker image
+```bash
+docker pull fetchdocker/data-takehome-localstack:latest
+  ```
+
+6. Check if docker compose is installed. Should be installed automatically if the Docker desktop for Mac is downloaded.
+```bash
+docker-compose --version
+```
+
+7. run docker-compose to build the containers based on the config in docker-compose.yml
+
+```bash
+docker-compose up -d
+```
+![image](https://github.com/Venkat3103/Fetch_DE_Challenge/assets/53090670/031d27a8-b27f-4c50-b7b4-6cfeb4838d15)
+
+<img width="1482" alt="image" src="https://github.com/Venkat3103/Fetch_DE_Challenge/assets/53090670/8e0da743-da2a-4e23-ac31-97f1409b2e3e">
+
+
+8. Run the user_login python script
+```bash
+python3 user_login.py
+```
+
+Log Output:
+
+![image](https://github.com/Venkat3103/Fetch_DE_Challenge/assets/53090670/3e517048-f13f-4010-919e-bdc3443d544b)
+
+
+9. Connect to postgres
+```bash
+psql -d postgres -U postgres -p 5432 -h localhost -W
+```
+
+10. Display user_logins table to see populated data (Note - i. 99 records were inserted after omitting the error record. ii. app_version is varchar)
+```bash
+select * from user_logins limit 10;
+```
+![image](https://github.com/Venkat3103/Fetch_DE_Challenge/assets/53090670/911dd1e5-e12e-4483-a18c-d0b5aa0240f3)
+
+
+
+11. Display error_log_table
+```bash
+select * from error_log_table;
+```
+
+![image](https://github.com/Venkat3103/Fetch_DE_Challenge/assets/53090670/428a9813-584b-4686-9271-e92dcdd1074f)
+
