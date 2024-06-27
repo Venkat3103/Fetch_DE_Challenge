@@ -30,6 +30,8 @@ I have used the psycopg2 library to connect to the Postgres DB. This makes the i
 <br /><br />
 The script is designed to be run as a standalone Python application, which is executed on a local development environment in a docker container. Pre-existing docker images are used, which are further used to build the docker containers that run the application.
 
+Further with more time, I would explore other encryption/hashing mechanisms, deploy this on AWS, and look at ways to orchestrate the flow and manage the dependencies between the services present. Explore other services that are new to the market that could perform the same task with better efficiency. 
+
 ## Questions
 <b> 1. How would you deploy this application in production?</b>
  * Move towards more sophisticated ways of transforming data. Meaning, say using a Glue Job with PySpark which will support distributed processing. This is useful when handling high-volume complex JSON data.
@@ -68,6 +70,7 @@ The script is designed to be run as a standalone Python application, which is ex
  * However duplicate entries are allowed in the user_logins table in the Postgres database if the same message is sent again in the queue. This is because of the lack of a unique key constraint in the user_logins table schema. Currently permits inserting the same records over and over again (but this can be fixed).
  * The given table schema does not comply with the type of data arriving in the queue and hence had to be altered. The app_version is modified to varchar from int after looking at sample queue data.
  * All records coming in have to follow the schema definition and contain the required fields to be inserted into user_logins. Otherwise considered as error records and inserted into an error log table.
+
 
 ## Set up
 
