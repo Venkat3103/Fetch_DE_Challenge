@@ -6,7 +6,7 @@
 To read messages from the Amazon SQS queue, I used the boto3 library, which is the AWS SDK for Python. Reading the message involves two steps - i. Client initialization and ii. Receive messages.
 <br />
 * SQS Client Initialization: A client for SQS is created using boto3.client('sqs', creds). The client is configured with the endpoint URL, region, and credentials, which work with localstack.
-* Receive Messages: Messages are received using sqs.receive_message(...), which pulls messages from the specified SQS queue. The function uses long polling (WaitTimeSeconds=20), a strategy that reduces the number of empty responses by allowing the SQS service to wait until a message is available in the queue before sending a response. This method is efficient because it reduces the number of API calls made when the queue is empty and can retrieve messages as soon as they become available.
+* Receive Messages: Messages are received using sqs.receive_message(), which pulls messages from the specified SQS queue. The function uses long polling (WaitTimeSeconds=20), a strategy that reduces the number of empty responses by allowing the SQS service to wait until a message is available in the queue before sending a response. This method is efficient because it reduces the number of API calls made when the queue is empty and can retrieve messages as soon as they become available.
 
 
 <b> 2. What type of data structures should be used?</b>
