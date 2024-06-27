@@ -1,5 +1,6 @@
 # Fetch_DE_Challenge
 
+## Decisions
 <b> 1. How will you read messages from the queue?</b>
 <br /><br />
 To read messages from the Amazon SQS queue, I used the boto3 library, which is the AWS SDK for Python. Reading the message involves two steps - i. Client initialization and ii. Receive messages.
@@ -23,8 +24,47 @@ To mask Personally Identifiable Information (PII) such as device IDs and IP addr
 
 <b> 4. What will be your strategy for connecting and writing to Postgres?</b>
 <br /><br />
-I have used the psycopg2 library to connect to the Postgres DB. This makes the integration with Python feasible. Parameters such as dbname, user, password, host, and port are sent as connection parameters to establish a connection to the Postgres DB. The connection object is further used to perform CRUD operations on the database through the python script.
+I have used the psycopg2 library to connect to the Postgres DB. This makes the integration with Python feasible. Parameters such as dbname, user, password, host, and port are sent as connection parameters to establish a connection to the Postgres DB. The connection object is further used to perform CRUD operations on the database through the Python script.
 
 <b> 5. Where and how will your application run? </b>
 <br /><br />
 The script is designed to be run as a standalone Python application, which is executed on a local development environment in a docker container. Pre-existing docker images are used, which are further used to build the docker containers that run the application.
+
+## Questions
+<b> 1. How would you deploy this application in production?</b>
+ * Move towards more sophisticated ways of transforming data. Meaning, say using a Glue Job with PySpark which will support distributed processing. This is useful when handling high-volume complex JSON data.
+ * Deploying the application in the cloud - use services such as ECS or EKS which support container orchestration and can further handle deployment, scaling, and the management of these containerized applications.
+ * Use AWS SQS for message queue and Amazon Aurora for Postgres. AWS SQS is reliable at scale and Aurora provides high availability.
+ * Use AWS CloudFormation or Terraform to provision application code and support infrastructure.
+ * Orchestrate the pipeline with Airflow, or AWS Glue workflows if using Glue.
+ - Logging errors and performance metrics will help in proactive maintenance and troubleshooting of the pipeline. For example, AWS CloudWatch can be used to keep track of the application's performance and health in real time.
+
+
+<b> 2. What other components would you want to add to make this production-ready?</b><br />
+ * CI/CD, version control, and code review - implement CI/CD pipelines using tools like Jenkins, GitLab CI, or GitHub Actions to automate testing and deployment. This ensures that new changes are automatically tested and deployed efficiently.
+ * Disaster prevention and recovery - multi-availability zone deployment, automated backups, continuous incremental backups, point-in-time recovery
+ * Handling orchestration failures - allow retries, have call-back functions, notify developers on Slack
+ * Consider having multiple environments to test the pipeline before moving into production. 
+ * Documentation of pipeline design, and key decisions made when setting up pipelines and implementing specific features by developers and engineers
+
+
+<b> 3. How can this application scale with a growing dataset?</b>
+ * Auto-scaling of both containers and database:
+   * Use ECS with Application Load Balancer to manage the containerized applications while ensuring high availability and fault tolerance.
+   * Aurora's autoscaling capabilities dynamically adjust the number of replicas provisioned for an Aurora DB cluster enabling it to efficiently handle sudden increases in workload.
+   * We can also use database features like sharding and partitioning to handle increasing data volume.
+ * AWS SQS standard queues offer maximum throughput, at-least-once delivery, and best-effort ordering making them ideal for high-volume applications. Batching operations, and adjusting visibility timeout are a couple of ways to optimize SQS message throughput when it comes to high-volume applications.
+ * Explore caching mechanism for frequently accessed data which will reduce load on the database and speed up response times.
+ * Choosing spark-based transformations to leverage distributed data processing.
+
+
+<b> 4. How can PII be recovered later on?</b>
+ * To recover PII, a deterministic encryption technique can be used since it produces the same ciphertext for a given value and the values can be decrypted later using encryption keys. However, it has to be made sure that the encryption keys are secure and inaccessible to unauthorized members. AWS Key Management Service is a great option to store encryption keys.
+
+
+<b> 5. What are the assumptions you made?</b><br />
+ * Messages are processed assuming that the queue is a standard queue and not a FIFO queue
+ * We do not need the messages once they are processed. They are deleted once consumed.
+ * However duplicate entries are allowed in the user_logins table in the Postgres database if the same message is sent again in the queue. This is because of the lack of a unique key constraint in the user_logins table schema. Currently permits inserting the same records over and over again (but this can be fixed).
+ * The given table schema does not comply with the type of data arriving in the queue and hence had to be altered. The app_version is modified to varchar from int after looking at sample queue data.
+ * All records coming in have to follow the schema definition and contain the required fields to be inserted into user_logins. Otherwise considered as error records and inserted into an error log table.
