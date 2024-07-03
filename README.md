@@ -38,13 +38,14 @@ Further with more time, I would explore other encryption/hashing mechanisms, dep
  * Deploying the application in the cloud - use services such as ECS or EKS which support container orchestration and can further handle deployment, scaling, and the management of these containerized applications.
  * Use AWS SQS for message queue and Amazon Aurora for Postgres. AWS SQS is reliable at scale and Aurora provides high availability.
  * Use AWS CloudFormation or Terraform to provision application code and support infrastructure.
- * Orchestrate the pipeline with Airflow, or AWS Glue workflows if using Glue.
+ * While I have used a simple Python script to extract and transform data here when this has to go into production, we can incorporate lambda to process the data coming in from the SQS queue. It also depends if we want it to be an event-driven architecture or a polling mechanism (need to use an orchestrator (say Eventbridge) for lambda to pull the data). If the data does not require complex transformations, lambda will be sufficient to process the data from SQS which can later be batch inserted into a PostgresDB. However, if we are dealing with complex transformations, we can write the data into S3 from SQS using lambda, transform using Glue and then use the in-built postgres connector in Glue to insert the incoming data into Postgres.
  - Logging errors and performance metrics will help in proactive maintenance and troubleshooting of the pipeline. For example, AWS CloudWatch can be used to keep track of the application's performance and health in real time.
 
 
 <b> 2. What other components would you want to add to make this production-ready?</b><br />
  * CI/CD, version control, and code review - implement CI/CD pipelines using tools like Jenkins, GitLab CI, or GitHub Actions to automate testing and deployment. This ensures that new changes are automatically tested and deployed efficiently.
  * Disaster prevention and recovery - multi-availability zone deployment, automated backups, continuous incremental backups, point-in-time recovery
+ * When dealing with SQS, we might also need to consider the possibility of failure of reading and processing a message. We can use dead-letter queues to improve fault tolerance.
  * Handling orchestration failures - allow retries, have call-back functions, notify developers on Slack
  * Consider having multiple environments to test the pipeline before moving into production. 
  * Documentation of pipeline design, and key decisions made when setting up pipelines and implementing specific features by developers and engineers
@@ -55,7 +56,7 @@ Further with more time, I would explore other encryption/hashing mechanisms, dep
    * Use ECS with Application Load Balancer to manage the containerized applications while ensuring high availability and fault tolerance.
    * Aurora's autoscaling capabilities dynamically adjust the number of replicas provisioned for an Aurora DB cluster enabling it to efficiently handle sudden increases in workload.
    * We can also use database features like sharding and partitioning to handle increasing data volume.
- * AWS SQS standard queues offer maximum throughput, at-least-once delivery, and best-effort ordering making them ideal for high-volume applications. Batching operations, and adjusting visibility timeout are a couple of ways to optimize SQS message throughput when it comes to high-volume applications.
+ * AWS SQS standard queues offer maximum throughput, at-least-once delivery, and best-effort ordering making them ideal for high-volume applications. Batching operations, and adjusting visibility timeout are a couple of ways to optimize SQS message throughput when it comes to high-volume applications. However, if we need a retention window for the data after consumption, or if the load is very high, instead of using a message queue, we can move towards distributed streaming platforms such as Kinesis Data Streams or Kafka and use Firehose/Flink/Glue Streaming to process and write to a data warehouse or a database. 
  * Explore caching mechanism for frequently accessed data which will reduce load on the database and speed up response times.
  * Choosing spark-based transformations to leverage distributed data processing.
 
